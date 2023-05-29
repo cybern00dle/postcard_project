@@ -1,6 +1,8 @@
+import re
+from string import punctuation
+
 import pandas as pd
 from pymystem3 import Mystem
-from string import punctuation
 
 
 class Lemmatizer:
@@ -39,20 +41,18 @@ class Lemmatizer:
         """
         self.clean()
         self.lemmatize()
-        # print необходим на этапе проверки правильности работы кода
-        print(' '.join(self.lemmas))
         return ' '.join(self.lemmas)
 
 
 def main() -> None:
     corpus = pd.read_excel('corpus.xlsx')
-    index = 0
-    for text in corpus['Текст открытки']:
+    needed_postcards = pd.DataFrame()
+    for idx, text in enumerate(corpus['Текст открытки']):
         lemmatizer = Lemmatizer(text, punctuation)
         lemmas = lemmatizer.run()
-        corpus.loc[index, 'Текст открытки'] = lemmas
-        index += 1
-    corpus.to_excel('corpus_lemmatized.xlsx', index=False)
+        if re.search(r'скучать\s+за', lemmas):
+            needed_postcards.loc[len(needed_postcards)] = corpus[idx]
+    needed_postcards.to_excel('postcards.xlsx', index=False)
 
 
 if __name__ == '__main__':
